@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+            color: #333;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        .tip {
+            background-color: #e8f4f8;
+            border-left: 4px solid #4a9eca;
+            padding: 10px 15px;
+            margin: 15px 0;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            margin: 15px 0;
+        }
+        .steps {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        code {
+            background-color: #f0f0f0;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        /* Syntax Highlighting */
+        .keyword { color: #0033cc; }
+        .decorator { color: #6f42c1; }
+        .string { color: #008000; }
+        .comment { color: #6a737d; }
+        .function { color: #6f42c1; }
+        .self { color: #e36209; }
+        .builtin { color: #005cc5; }
+        .number { color: #005cc5; }
+    </style>
+</head>
+<body>
+    <h1>Student Management System with Flask Server</h1>
+    
+    <div class="tip">
+        <strong>Project Structure:</strong>
+        <pre>
+student_management/
+├── server/
+│   ├── app.py           # Flask server
+│   └── student_data.py  # Mock database
+└── client/
+    └── student.py       # Modified Student class
+        </pre>
+    </div>
+
+    <h2>1. PyCharm Project Setup</h2>
+    <div class="steps">
+        <ol>
+            <li>Open PyCharm → Create New Project</li>
+            <li>Name it "student_management"</li>
+            <li>Create virtual environment (venv)</li>
+            <li>Create folders: server/ and client/</li>
+            <li>Install required packages:
+                <pre>pip install flask requests</pre>
+            </li>
+        </ol>
+    </div>
+
+    <h2>2. Flask Server (server/app.py)</h2>
+    <pre>
+<span class="keyword">from</span> flask <span class="keyword">import</span> Flask, jsonify
+<span class="keyword">from</span> student_data <span class="keyword">import</span> STUDENT_DATA
+
+app = Flask(__name__)
+
+<span class="decorator">@app.route</span>(<span class="string">'/api/students'</span>, methods=[<span class="string">'GET'</span>])
+<span class="keyword">def</span> <span class="function">get_all_students</span>():
+    <span class="comment"># Simply return all student data</span>
+    <span class="keyword">return</span> jsonify(STUDENT_DATA)
+
+<span class="decorator">@app.route</span>(<span class="string">'/api/students/&lt;student_id&gt;'</span>, methods=[<span class="string">'GET'</span>])
+<span class="keyword">def</span> <span class="function">get_student</span>(student_id):
+    <span class="comment"># Loop through student data to find matching student_id</span>
+    found_student = <span class="builtin">None</span>
+    
+    <span class="keyword">for</span> student <span class="keyword">in</span> STUDENT_DATA:
+        <span class="keyword">if</span> student[<span class="string">'student_id'</span>] == student_id:
+            found_student = student
+            <span class="keyword">break</span>
+    
+    <span class="comment"># If we found the student, return their data</span>
+    <span class="keyword">if</span> found_student <span class="keyword">is not</span> <span class="builtin">None</span>:
+        <span class="keyword">return</span> jsonify(found_student)
+    
+    <span class="comment"># If we didn't find the student, return an error</span>
+    <span class="keyword">return</span> jsonify({
+        <span class="string">'error'</span>: <span class="string">'Student not found'</span>
+    }), <span class="number">404</span>
+
+<span class="comment"># This code runs the server when you execute this file directly</span>
+<span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:
+    <span class="comment"># debug=True helps us see errors in the browser</span>
+    <span class="comment"># port=5000 is the default port number</span>
+    app.run(debug=<span class="builtin">True</span>, port=<span class="number">5000</span>)</pre>
+
+    <div class="tip">
+        <strong>Understanding the Server Code:</strong>
+        <ul>
+            <li>The server creates two URLs (routes) that clients can access:
+                <ul>
+                    <li><code>http://localhost:5000/api/students</code> - gets all students</li>
+                    <li><code>http://localhost:5000/api/students/A12345</code> - gets one specific student</li>
+                </ul>
+            </li>
+            <li>When someone requests a specific student:
+                <ol>
+                    <li>The server looks through each student in the list</li>
+                    <li>If it finds a matching student ID, it returns that student's data</li>
+                    <li>If no match is found, it returns an error message</li>
+                </ol>
+            </li>
+        </ul>
+    </div>
+
+    <h2>3. Mock Database (server/student_data.py)</h2>
+    <pre>
+<span class="comment"># This is our "fake database" - just a list of dictionaries</span>
+<span class="comment"># Each dictionary contains information about one student</span>
+STUDENT_DATA = [
+    {
+        <span class="string">'student_id'</span>: <span class="string">'A12345'</span>,
+        <span class="string">'name'</span>: <span class="string">'Alice Smith'</span>,
+        <span class="string">'grades'</span>: [<span class="number">85</span>, <span class="number">92</span>, <span class="number">78</span>]
+    },
+    {
+        <span class="string">'student_id'</span>: <span class="string">'B67890'</span>,
+        <span class="string">'name'</span>: <span class="string">'Bob Johnson'</span>,
+        <span class="string">'grades'</span>: [<span class="number">95</span>, <span class="number">88</span>, <span class="number">82</span>]
+    }
+]</pre>
+
+    <h2>4. Modified Student Class (client/student.py)</h2>
+    <pre>
+<span class="keyword">import</span> requests
+
+<span class="keyword">class</span> <span class="function">Student</span>:
+    <span class="comment"># The base URL for our server - all requests will start with this</span>
+    BASE_URL = <span class="string">"http://localhost:5000/api"</span>
+
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, student_id):
+        <span class="comment"># Store the student ID and load their data from the server</span>
+        <span class="self">self</span>._student_id = student_id
+        <span class="self">self</span>._load_data()
+    
+    <span class="keyword">def</span> <span class="function">_load_data</span>(<span class="self">self</span>):
+        <span class="comment"># Create the full URL for this specific student</span>
+        url = <span class="string">f"{</span><span class="self">self</span>.BASE_URL}/students/{<span class="self">self</span>._student_id}<span class="string">}"</span>
+        
+        <span class="comment"># Try to get the student's data from the server</span>
+        response = requests.get(url)
+        
+        <span class="comment"># Check if the request was successful</span>
+        <span class="keyword">if</span> response.status_code == <span class="number">200</span>:  <span class="comment"># 200 means success</span>
+            <span class="comment"># Convert the response to a Python dictionary</span>
+            data = response.json()
+            
+            <span class="comment"># Store the student's information</span>
+            <span class="self">self</span>._name = data[<span class="string">'name'</span>]
+            <span class="self">self</span>._grades = data[<span class="string">'grades'</span>]
+        <span class="keyword">else</span>:
+            <span class="comment"># If the student wasn't found, raise an error</span>
+            <span class="keyword">raise</span> <span class="builtin">ValueError</span>(<span class="string">f"Student {self._student_id} not found"</span>)
+
+    <span class="decorator">@property</span>
+    <span class="keyword">def</span> <span class="function">name</span>(<span class="self">self</span>):
+        <span class="comment"># Provide read-only access to the name</span>
+        <span class="keyword">return</span> <span class="self">self</span>._name
+    
+    <span class="decorator">@property</span>
+    <span class="keyword">def</span> <span class="function">grades</span>(<span class="self">self</span>):
+        <span class="comment"># Return a copy of grades to prevent direct modification</span>
+        <span class="keyword">return</span> <span class="self">self</span>._grades.copy()
+    
+    <span class="keyword">def</span> <span class="function">calculate_average</span>(<span class="self">self</span>):
+        <span class="comment"># Calculate the average of all grades</span>
+        <span class="keyword">if not</span> <span class="self">self</span>._grades:  <span class="comment"># If there are no grades</span>
+            <span class="keyword">return</span> <span class="number">0</span>
+        
+        <span class="comment"># Add up all grades and divide by the number of grades</span>
+        total = <span class="builtin">sum</span>(<span class="self">self</span>._grades)
+        count = <span class="builtin">len</span>(<span class="self">self</span>._grades)
+        <span class="keyword">return</span> total / count
+    
+    <span class="keyword">def</span> <span class="function">__str__</span>(<span class="self">self</span>):
+        <span class="comment"># Return a friendly string representation of the student</span>
+        <span class="keyword">return</span> <span class="string">f"Student: {self._name} (ID: {self._student_id})"</span></pre>
+
+
+    <h2>4. Modified Student Class (client/student.py)</h2>
+    <pre>
+<span class="keyword">import</span> requests
+
+<span class="keyword">class</span> <span class="function">Student</span>:
+    BASE_URL = <span class="string">"http://localhost:5000/api"</span>
+
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, student_id):
+        <span class="self">self</span>._student_id = student_id
+        <span class="self">self</span>._load_data()
+    
+    <span class="keyword">def</span> <span class="function">_load_data</span>(<span class="self">self</span>):
+        <span class="comment"># Fetch student data from server</span>
+        response = requests.get(
+            <span class="string">f"{</span><span class="self">self</span>.BASE_URL}/students/{<span class="self">self</span>._student_id}<span class="string">}"</span>
+        )
+        <span class="keyword">if</span> response.status_code == <span class="number">200</span>:
+            data = response.json()
+            <span class="self">self</span>._name = data[<span class="string">'name'</span>]
+            <span class="self">self</span>._grades = data[<span class="string">'grades'</span>]
+        <span class="keyword">else</span>:
+            <span class="keyword">raise</span> <span class="builtin">ValueError</span>(<span class="string">f"Student {self._student_id} not found"</span>)
+
+    <span class="decorator">@property</span>
+    <span class="keyword">def</span> <span class="function">name</span>(<span class="self">self</span>):
+        <span class="keyword">return</span> <span class="self">self</span>._name
+    
+    <span class="decorator">@property</span>
+    <span class="keyword">def</span> <span class="function">grades</span>(<span class="self">self</span>):
+        <span class="keyword">return</span> <span class="self">self</span>._grades.copy()
+    
+    <span class="keyword">def</span> <span class="function">calculate_average</span>(<span class="self">self</span>):
+        <span class="keyword">if not</span> <span class="self">self</span>._grades:
+            <span class="keyword">return</span> <span class="number">0</span>
+        <span class="keyword">return</span> <span class="builtin">sum</span>(<span class="self">self</span>._grades) / <span class="builtin">len</span>(<span class="self">self</span>._grades)
+    
+    <span class="keyword">def</span> <span class="function">__str__</span>(<span class="self">self</span>):
+        <span class="keyword">return</span> <span class="string">f"Student: {self._name} (ID: {self._student_id})"</span></pre>
+
+    <h2>5. Demo Area</h2>
+    <pre>
+<span class="comment"># DEMO AREA</span>
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    <span class="comment"># Create a student (will fetch data from server)</span>
+    <span class="keyword">try</span>:
+        student1 = <span class="function">Student</span>(<span class="string">"A12345"</span>)
+        
+        <span class="comment"># Test string representation</span>
+        <span class="builtin">print</span>(student1)
+        
+        <span class="comment"># Test properties</span>
+        <span class="builtin">print</span>(<span class="string">f"Name: {</span>student1.name<span class="string">}"</span>)
+        <span class="builtin">print</span>(<span class="string">f"Grades: {</span>student1.grades<span class="string">}"</span>)
+        
+        <span class="comment"># Test calculating average</span>
+        <span class="builtin">print</span>(<span class="string">f"Average grade: {</span>student1.calculate_average()<span class="string">}"</span>)
+
+        <span class="comment"># Try with non-existent student</span>
+        student2 = <span class="function">Student</span>(<span class="string">"X99999"</span>)  <span class="comment"># Should raise ValueError</span>
+    
+    <span class="keyword">except</span> <span class="builtin">ValueError</span> <span class="keyword">as</span> e:
+        <span class="builtin">print</span>(<span class="string">f"Error: {</span>e<span class="string">}"</span>)</pre>
+
+    <div class="warning">
+        <strong>Important Steps:</strong>
+        <ol>
+            <li>Start the Flask server first:
+                <pre>python server/app.py</pre>
+            </li>
+            <li>Then run the client demo in a separate terminal:
+                <pre>python client/student.py</pre>
+            </li>
+        </ol>
+    </div>
+
+    <h2>Key Changes from Original Student Class:</h2>
+    <ul>
+        <li>Added server communication through requests library</li>
+        <li>Removed direct grade manipulation (add_grade)</li>
+        <li>Added _load_data method to fetch from server</li>
+        <li>Added error handling for server communication</li>
+        <li>Made grades a read-only property</li>
+    </ul>
+
+</body>
+</html>
